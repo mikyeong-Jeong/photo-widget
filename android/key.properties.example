@@ -1,0 +1,7 @@
+# 스토어 출시용 서명 설정 예시.
+# 이 파일을 key.properties 로 복사해서 값을 채운다. (key.properties 와 .jks 는 git 에 올리지 않는다)
+# storeFile 경로는 android/ 폴더 기준.
+storeFile=keystores/release.jks
+storePassword=
+keyAlias=release
+keyPassword=

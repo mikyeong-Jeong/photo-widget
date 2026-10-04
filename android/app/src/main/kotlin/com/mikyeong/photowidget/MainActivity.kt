@@ -1,4 +1,4 @@
-package com.example.photo_widget
+package com.mikyeong.photowidget
 
 import io.flutter.embedding.android.FlutterActivity
 
