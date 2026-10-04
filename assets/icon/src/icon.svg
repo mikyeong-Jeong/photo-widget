@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="#0F8A7E"/>
+  <defs>
+    <clipPath id="photo"><rect x="252" y="252" width="316" height="316" rx="40"/></clipPath>
+  </defs>
+  <!-- 작은 위젯 타일들 -->
+  <rect x="612" y="230" width="182" height="170" rx="48" fill="#FFFFFF" fill-opacity="0.55"/>
+  <rect x="612" y="420" width="182" height="170" rx="48" fill="#FFFFFF" fill-opacity="0.35"/>
+  <rect x="230" y="624" width="564" height="170" rx="48" fill="#FFFFFF" fill-opacity="0.45"/>
+  <!-- 사진 위젯 (2×2) -->
+  <rect x="230" y="230" width="360" height="360" rx="60" fill="#FFFFFF"/>
+  <g clip-path="url(#photo)">
+    <rect x="252" y="252" width="316" height="316" fill="#BFE9F7"/>
+    <circle cx="488" cy="338" r="40" fill="#FFC23D"/>
+    <path d="M252 500 L352 388 L430 470 L470 432 L568 528 L568 568 L252 568 Z" fill="#2BA597"/>
+    <path d="M252 540 Q350 486 440 520 T568 512 L568 568 L252 568 Z" fill="#0B6E63"/>
+  </g>
+  <!-- 하단 위젯 안 사진 썸네일 줄 -->
+  <rect x="262" y="656" width="106" height="106" rx="26" fill="#FFFFFF" fill-opacity="0.85"/>
+  <rect x="388" y="682" width="230" height="22" rx="11" fill="#FFFFFF" fill-opacity="0.85"/>
+  <rect x="388" y="722" width="150" height="22" rx="11" fill="#FFFFFF" fill-opacity="0.6"/>
+</svg>

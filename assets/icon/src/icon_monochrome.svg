@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Android 13+ 테마 아이콘: 모양(알파)만 쓰인다 -->
+  <defs>
+    <mask id="photo">
+      <rect x="230" y="230" width="360" height="360" rx="60" fill="#fff"/>
+      <rect x="262" y="262" width="296" height="296" rx="34" fill="#000"/>
+      <circle cx="488" cy="338" r="40" fill="#fff"/>
+      <path d="M262 500 L352 398 L430 476 L470 438 L558 524 L558 558 L262 558 Z" fill="#fff"/>
+    </mask>
+  </defs>
+  <rect x="230" y="230" width="360" height="360" fill="#fff" mask="url(#photo)"/>
+  <rect x="612" y="230" width="182" height="170" rx="48" fill="#fff" fill-opacity="0.7"/>
+  <rect x="612" y="420" width="182" height="170" rx="48" fill="#fff" fill-opacity="0.5"/>
+  <rect x="230" y="624" width="564" height="170" rx="48" fill="#fff" fill-opacity="0.6"/>
+</svg>

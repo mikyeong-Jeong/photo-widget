@@ -58,3 +58,10 @@ flutter run          # 연결된 Android 기기/에뮬레이터
 flutter analyze
 flutter test
 ```
+
+## 앱 아이콘
+
+- 원본: `assets/icon/src/*.svg` → PNG: `assets/icon/*.png` (1024×1024)
+  - `icon.png` 전체 아이콘(Android 7 이하), `icon_foreground.png` 적응형 아이콘 전경, `icon_monochrome.png` Android 13+ 테마 아이콘
+- 이미지를 바꾼 뒤 `dart run flutter_launcher_icons` 를 실행하면 `android/app/src/main/res/` 아이콘이 다시 만들어진다. 설정은 `pubspec.yaml` 의 `flutter_launcher_icons`.
+- 전경 그림은 가운데 약 60% 안에 그려야 원형 등으로 잘려도 보인다.
