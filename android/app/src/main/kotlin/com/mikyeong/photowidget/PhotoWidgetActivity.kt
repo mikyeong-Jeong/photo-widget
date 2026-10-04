@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -29,7 +30,11 @@ class PhotoWidgetActivity : FlutterActivity() {
             }
     }
 
-    /** 어느 위젯에서 어떤 목적으로 열렸는지. 위젯 ID 가 없으면 null. */
+    /**
+     * 어느 위젯에서 어떤 목적으로 열렸는지와 위젯의 지금 크기(dp). 위젯 ID 가 없으면 null.
+     *
+     * 위젯 크기는 직접 맞추기 화면의 틀 비율로 쓴다.
+     */
     private fun launchInfo(): Map<String, Any>? {
         val widgetId =
             intent.getIntExtra(
@@ -38,7 +43,19 @@ class PhotoWidgetActivity : FlutterActivity() {
             )
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return null
         val mode = if (intent.action == ACTION_VIEW_PHOTO) "view" else "configure"
-        return mapOf("widgetId" to widgetId, "mode" to mode)
+
+        // 세로 화면에서는 (최소 너비 × 최대 높이), 가로 화면에서는 (최대 너비 × 최소 높이)가 실제 크기다.
+        val options = AppWidgetManager.getInstance(this).getAppWidgetOptions(widgetId)
+        val landscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val width =
+            options.getInt(
+                if (landscape) AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH else AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH,
+            )
+        val height =
+            options.getInt(
+                if (landscape) AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT,
+            )
+        return mapOf("widgetId" to widgetId, "mode" to mode, "widgetWidth" to width, "widgetHeight" to height)
     }
 
     companion object {

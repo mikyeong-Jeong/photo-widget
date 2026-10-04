@@ -7,15 +7,23 @@ import '../../app/theme.dart';
 import '../../data/photo/saved_photo.dart';
 import '../../data/widget/photo_widget_bridge.dart';
 import '../photos/photo_list_controller.dart';
+import 'widget_crop_screen.dart';
 import 'widget_photo_picker_screen.dart';
 
 /// 위젯을 눌렀을 때 뜨는 원본 사진 보기.
 ///
 /// 손가락으로 확대·이동할 수 있고, 아래에서 위젯 보기 방식과 사진을 바꾼다.
 class WidgetPhotoViewerScreen extends ConsumerStatefulWidget {
-  const WidgetPhotoViewerScreen({super.key, required this.widgetId});
+  const WidgetPhotoViewerScreen({
+    super.key,
+    required this.widgetId,
+    this.widgetAspectRatio = 1,
+  });
 
   final int widgetId;
+
+  /// 위젯의 가로/세로 비율. 직접 맞추기 틀에 쓴다.
+  final double widgetAspectRatio;
 
   @override
   ConsumerState<WidgetPhotoViewerScreen> createState() =>
@@ -28,6 +36,7 @@ class _WidgetPhotoViewerScreenState
   String? _path;
   bool _exists = false;
   PhotoFit _fit = PhotoFit.fit;
+  Rect? _crop;
 
   PhotoWidgetBridge get _bridge => ref.read(photoWidgetBridgeProvider);
 
@@ -40,6 +49,7 @@ class _WidgetPhotoViewerScreenState
   Future<void> _load() async {
     final path = await _bridge.photoPathOf(widget.widgetId);
     final fit = await _bridge.photoFitOf(widget.widgetId);
+    final crop = await _bridge.photoCropOf(widget.widgetId);
     final exists = path != null && await File(path).exists();
     if (!mounted) return;
     setState(() {
@@ -47,6 +57,7 @@ class _WidgetPhotoViewerScreenState
       _path = path;
       _exists = exists;
       _fit = fit;
+      _crop = crop;
     });
   }
 
@@ -64,9 +75,12 @@ class _WidgetPhotoViewerScreenState
       ),
     );
     if (picked == null || !mounted) return;
+    // 새 사진이면 직접 맞춘 영역은 버리고 전체 보기로 돌아간다. (PhotoWidgetBridge.assign)
     setState(() {
       _path = picked.file.path;
       _exists = true;
+      _crop = null;
+      if (_fit == PhotoFit.custom) _fit = PhotoFit.fit;
     });
     ScaffoldMessenger.of(
       context,
@@ -74,8 +88,35 @@ class _WidgetPhotoViewerScreenState
   }
 
   Future<void> _changeFit(PhotoFit fit) async {
+    if (fit == PhotoFit.custom) return _openCropEditor();
     setState(() => _fit = fit);
     await _bridge.setPhotoFit(widget.widgetId, fit);
+  }
+
+  /// 직접 맞추기 화면을 열고, 적용하면 그 영역으로 위젯을 채운다. 취소하면 그대로 둔다.
+  Future<void> _openCropEditor() async {
+    final path = _path;
+    if (path == null || !_exists) return;
+    final crop = await Navigator.push<Rect>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WidgetCropScreen(
+          file: File(path),
+          aspectRatio: widget.widgetAspectRatio,
+          initialCrop: _crop,
+        ),
+      ),
+    );
+    if (crop == null || !mounted) return;
+    setState(() {
+      _fit = PhotoFit.custom;
+      _crop = crop;
+    });
+    await _bridge.setCustomCrop(widget.widgetId, crop);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('맞춘 모습으로 위젯에 적용했어요')));
   }
 
   @override
@@ -112,21 +153,26 @@ class _WidgetPhotoViewerScreenState
             : SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: Row(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
+                      SizedBox(
+                        width: double.infinity,
                         child: SegmentedButton<PhotoFit>(
                           showSelectedIcon: false,
-                          segments: const [
-                            ButtonSegment(
+                          segments: [
+                            const ButtonSegment(
                               value: PhotoFit.fit,
-                              icon: Icon(Icons.fit_screen_outlined),
                               label: Text('전체 보기'),
                             ),
-                            ButtonSegment(
+                            const ButtonSegment(
                               value: PhotoFit.fill,
-                              icon: Icon(Icons.crop_outlined),
                               label: Text('꽉 채우기'),
+                            ),
+                            ButtonSegment(
+                              value: PhotoFit.custom,
+                              label: const Text('직접 맞추기'),
+                              enabled: _exists,
                             ),
                           ],
                           selected: {_fit},
@@ -134,11 +180,22 @@ class _WidgetPhotoViewerScreenState
                               _changeFit(selected.single),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      FilledButton.icon(
-                        onPressed: _changePhoto,
-                        icon: const Icon(Icons.swap_horiz),
-                        label: const Text('사진 바꾸기'),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (_fit == PhotoFit.custom && _exists)
+                            TextButton.icon(
+                              onPressed: _openCropEditor,
+                              icon: const Icon(Icons.crop),
+                              label: const Text('다시 맞추기'),
+                            ),
+                          const Spacer(),
+                          FilledButton.icon(
+                            onPressed: _changePhoto,
+                            icon: const Icon(Icons.swap_horiz),
+                            label: const Text('사진 바꾸기'),
+                          ),
+                        ],
                       ),
                     ],
                   ),

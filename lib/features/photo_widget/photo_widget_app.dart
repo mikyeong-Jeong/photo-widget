@@ -67,6 +67,7 @@ class _LaunchGateState extends ConsumerState<_LaunchGate> {
     return switch (launch.mode) {
       WidgetLaunchMode.view => WidgetPhotoViewerScreen(
         widgetId: launch.widgetId,
+        widgetAspectRatio: launch.widgetAspectRatio,
       ),
       WidgetLaunchMode.configure => WidgetPhotoPickerScreen(
         selectedPath: _currentPath,

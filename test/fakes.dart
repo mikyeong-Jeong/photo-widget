@@ -51,6 +51,7 @@ class FakePhotoWidgetBridge implements PhotoWidgetBridge {
   final WidgetLaunch? launchInfo;
   final Map<int, String> paths;
   final Map<int, PhotoFit> fits = {};
+  final Map<int, Rect> crops = {};
   bool finished = false;
   bool closed = false;
   int refreshCount = 0;
@@ -66,8 +67,20 @@ class FakePhotoWidgetBridge implements PhotoWidgetBridge {
       fits[widgetId] ?? PhotoFit.fit;
 
   @override
+  Future<Rect?> photoCropOf(int widgetId) async => crops[widgetId];
+
+  @override
   Future<void> assign(int widgetId, SavedPhoto photo) async {
     paths[widgetId] = photo.file.path;
+    crops.remove(widgetId);
+    if (fits[widgetId] == PhotoFit.custom) fits[widgetId] = PhotoFit.fit;
+    refreshCount++;
+  }
+
+  @override
+  Future<void> setCustomCrop(int widgetId, Rect crop) async {
+    crops[widgetId] = crop;
+    fits[widgetId] = PhotoFit.custom;
     refreshCount++;
   }
 

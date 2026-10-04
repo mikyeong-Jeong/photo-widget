@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.RectF
 import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
@@ -11,7 +12,7 @@ import com.mikyeong.photowidget.R
 import com.mikyeong.photowidget.PhotoWidgetActivity
 
 /**
- * 홈 화면 사진 위젯. 위젯마다 [PhotoWidgetStore] 에 저장된 사진을 저장된 방식(전체 보기 / 꽉 채우기)으로 보여준다.
+ * 홈 화면 사진 위젯. 위젯마다 [PhotoWidgetStore] 에 저장된 사진을 저장된 방식(전체 보기 / 꽉 채우기 / 직접 맞추기)으로 보여준다.
  *
  * 위젯을 누르면 원본 사진 보기 화면이 열린다.
  * 앱에서 사진을 고르거나 지우면 Flutter 쪽에서 갱신(onUpdate)을 요청한다.
@@ -47,9 +48,11 @@ class PhotoWidgetProvider : AppWidgetProvider() {
         fun updateWidget(context: Context, manager: AppWidgetManager, widgetId: Int) {
             val views = RemoteViews(context.packageName, R.layout.photo_widget)
             val path = PhotoWidgetStore.photoPath(context, widgetId)
-            val bitmap = path?.let { loadBitmap(context, manager, widgetId, it) }
-
-            val fit = PhotoWidgetStore.photoFit(context, widgetId)
+            val savedFit = PhotoWidgetStore.photoFit(context, widgetId)
+            val crop = if (savedFit == PhotoFit.CUSTOM) PhotoWidgetStore.photoCrop(context, widgetId) else null
+            // 맞춘 영역이 없으면 꽉 채우기로 보여준다.
+            val fit = if (savedFit == PhotoFit.CUSTOM && crop == null) PhotoFit.FILL else savedFit
+            val bitmap = path?.let { loadBitmap(context, manager, widgetId, it, crop) }
             val photoViews = listOf(R.id.widget_photo_backdrop, R.id.widget_photo_fit, R.id.widget_photo_fill)
             photoViews.forEach { views.setViewVisibility(it, View.GONE) }
 
@@ -62,7 +65,8 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             } else {
                 views.setViewVisibility(R.id.widget_empty, View.GONE)
                 when (fit) {
-                    PhotoFit.FILL -> {
+                    // 직접 맞춘 영역은 이미 잘라서 읽었다. 위젯 비율이 바뀌었으면 그 가운데를 기준으로 채운다.
+                    PhotoFit.FILL, PhotoFit.CUSTOM -> {
                         views.setImageViewBitmap(R.id.widget_photo_fill, bitmap)
                         views.setViewVisibility(R.id.widget_photo_fill, View.VISIBLE)
                     }
@@ -95,24 +99,41 @@ class PhotoWidgetProvider : AppWidgetProvider() {
             return soft
         }
 
+        /** [photo] 에서 비율 영역 [crop] 만 잘라낸다. */
+        private fun cropTo(photo: Bitmap, crop: RectF): Bitmap {
+            val left = (crop.left * photo.width).toInt().coerceIn(0, photo.width - 1)
+            val top = (crop.top * photo.height).toInt().coerceIn(0, photo.height - 1)
+            val width = (crop.width() * photo.width).toInt().coerceIn(1, photo.width - left)
+            val height = (crop.height() * photo.height).toInt().coerceIn(1, photo.height - top)
+            val cropped = Bitmap.createBitmap(photo, left, top, width, height)
+            if (cropped !== photo) photo.recycle()
+            return cropped
+        }
+
         private fun loadBitmap(
             context: Context,
             manager: AppWidgetManager,
             widgetId: Int,
             path: String,
+            crop: RectF?,
         ) = try {
             val options = manager.getAppWidgetOptions(widgetId)
             val metrics = context.resources.displayMetrics
             fun px(dp: Int) =
                 ((if (dp > 0) dp else FALLBACK_SIZE_DP) * metrics.density).toInt().coerceAtMost(MAX_SIDE_PX)
 
-            PhotoBitmapLoader.load(
-                path,
-                targetWidth = px(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)),
-                targetHeight = px(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)),
-                // 위젯에 보낼 수 있는 Bitmap 한도(화면 크기 × 4 × 1.5)보다 넉넉히 작게.
-                maxBytes = 4L * metrics.widthPixels * metrics.heightPixels,
-            )
+            val targetWidth = px(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH))
+            val targetHeight = px(options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT))
+            // 맞춘 영역만 위젯 크기가 되도록, 사진 전체는 그만큼 더 크게 읽는다.
+            val photo =
+                PhotoBitmapLoader.load(
+                    path,
+                    targetWidth = (targetWidth / (crop?.width() ?: 1f)).toInt(),
+                    targetHeight = (targetHeight / (crop?.height() ?: 1f)).toInt(),
+                    // 위젯에 보낼 수 있는 Bitmap 한도(화면 크기 × 4 × 1.5)보다 넉넉히 작게.
+                    maxBytes = 4L * metrics.widthPixels * metrics.heightPixels,
+                )
+            if (photo == null || crop == null) photo else cropTo(photo, crop)
         } catch (_: OutOfMemoryError) {
             null
         }

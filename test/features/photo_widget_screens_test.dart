@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,13 @@ import 'package:photo_widget/features/photo_widget/photo_widget_app.dart';
 import '../fakes.dart';
 
 const _widgetId = 7;
+
+/// 가로 4px × 세로 2px 빨간 PNG.
+final _widePng = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAQAAAACAQMAAABFZu8gAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1'
+  'MAAA6mAAADqYAAAXcJy6UTwAAAAGUExURf8AAP///0EdNBEAAAABYktHRAH/Ai3eAAAAB3RJTUUH6goE'
+  'BTYy+dkfrAAAAAxJREFUCNdjYGBgAAAABAABJzQnCgAAAABJRU5ErkJggg==',
+);
 
 /// 사진 보기 화면은 실제 파일이 있는지 확인하므로, 그 비동기 작업이 끝날 때까지 기다린다.
 Future<void> _settleWithFileIo(WidgetTester tester) async {
@@ -92,8 +100,8 @@ void main() {
 
     setUp(() async {
       dir = await Directory.systemTemp.createTemp('viewer_test');
-      final file = File('${dir.path}/shown.jpg');
-      await file.writeAsBytes([0]);
+      final file = File('${dir.path}/shown.png');
+      await file.writeAsBytes(_widePng);
       shown = SavedPhoto(id: 'shown', file: file, addedAt: DateTime(2026));
     });
 
@@ -167,6 +175,85 @@ void main() {
       expect(bridge.finished, isFalse);
       expect(find.text('위젯 사진을 바꿨어요'), findsOneWidget);
       expect(find.text('사진 바꾸기'), findsOneWidget);
+    });
+
+    testWidgets('직접 맞추기를 적용하면 맞춘 영역으로 위젯을 채운다', (tester) async {
+      final bridge = FakePhotoWidgetBridge(
+        launchInfo: view(),
+        paths: {_widgetId: shown.file.path},
+      );
+      await tester.pumpWidget(
+        testApp(
+          repository: FakePhotoRepository([shown]),
+          bridge: bridge,
+          child: const WidgetScreensApp(),
+        ),
+      );
+      await _settleWithFileIo(tester);
+
+      await tester.tap(find.text('직접 맞추기'));
+      await _settleWithFileIo(tester);
+      expect(find.text('위젯에 보일 부분 맞추기'), findsOneWidget);
+
+      await tester.tap(find.text('적용'));
+      await _settleWithFileIo(tester);
+
+      // 가로 2:1 사진을 정사각형(기본) 위젯에 처음 상태로 적용하면 가운데 절반.
+      final crop = bridge.crops[_widgetId]!;
+      expect(bridge.fits[_widgetId], PhotoFit.custom);
+      expect(crop.left, closeTo(0.25, 1e-3));
+      expect(crop.right, closeTo(0.75, 1e-3));
+      expect(find.text('다시 맞추기'), findsOneWidget);
+    });
+
+    testWidgets('직접 맞추기를 취소하면 보기 방식을 바꾸지 않는다', (tester) async {
+      final bridge = FakePhotoWidgetBridge(
+        launchInfo: view(),
+        paths: {_widgetId: shown.file.path},
+      );
+      await tester.pumpWidget(
+        testApp(
+          repository: FakePhotoRepository([shown]),
+          bridge: bridge,
+          child: const WidgetScreensApp(),
+        ),
+      );
+      await _settleWithFileIo(tester);
+
+      await tester.tap(find.text('직접 맞추기'));
+      await _settleWithFileIo(tester);
+      await tester.tap(find.text('취소'));
+      await _settleWithFileIo(tester);
+
+      expect(bridge.fits[_widgetId], isNull);
+      expect(bridge.crops, isEmpty);
+      expect(find.text('다시 맞추기'), findsNothing);
+    });
+
+    testWidgets('직접 맞춘 위젯의 사진을 바꾸면 전체 보기로 돌아간다', (tester) async {
+      final bridge = FakePhotoWidgetBridge(
+        launchInfo: view(),
+        paths: {_widgetId: shown.file.path},
+      );
+      await bridge.setCustomCrop(_widgetId, const Rect.fromLTRB(0, 0, 0.5, 1));
+      await tester.pumpWidget(
+        testApp(
+          repository: FakePhotoRepository([shown, fakePhoto('other')]),
+          bridge: bridge,
+          child: const WidgetScreensApp(),
+        ),
+      );
+      await _settleWithFileIo(tester);
+      expect(find.text('다시 맞추기'), findsOneWidget);
+
+      await tester.tap(find.text('사진 바꾸기'));
+      await _settleWithFileIo(tester);
+      await tester.tap(find.byType(Image).last);
+      await _settleWithFileIo(tester);
+
+      expect(bridge.fits[_widgetId], PhotoFit.fit);
+      expect(bridge.crops, isEmpty);
+      expect(find.text('다시 맞추기'), findsNothing);
     });
 
     testWidgets('닫기를 누르면 위젯 화면을 닫는다', (tester) async {
