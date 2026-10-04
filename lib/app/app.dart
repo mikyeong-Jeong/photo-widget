@@ -10,10 +10,7 @@ class PhotoWidgetApp extends StatelessWidget {
     return MaterialApp(
       title: 'Photo Widget',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.teal,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
       darkTheme: ThemeData(
         colorSchemeSeed: Colors.teal,
         brightness: Brightness.dark,

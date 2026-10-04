@@ -14,7 +14,10 @@
 lib/
   main.dart            진입점 (ProviderScope)
   app/                 MaterialApp, 테마
-  features/<기능>/      화면 단위 기능
+  data/photo/          사진 저장소(앱 폴더 복사본 + photos.json 인덱스), 갤러리 선택
+  features/home/       저장한 사진 그리드 (추가 / 길게 눌러 삭제)
+  features/photo_detail/  사진 크게 보기 + 위젯 크기별 미리보기
+  features/photos/     사진 목록 상태(Riverpod) 공용 코드
 ```
 
 ## 여러 PC에서 빌드하기 (재설치 없이 덮어쓰기)
