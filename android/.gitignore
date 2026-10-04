@@ -15,3 +15,6 @@ key.properties
 
 # 팀/PC 공용 debug 키 (어느 PC에서 빌드해도 같은 서명 → 재설치 없이 업데이트)
 !app/debug.keystore
+
+# Gradle 빌드 산출물
+/build/
