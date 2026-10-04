@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 위젯 목록에 보이는 미리보기 (산과 해가 있는 사진 느낌) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="110dp"
+    android:viewportWidth="110"
+    android:viewportHeight="110">
+    <path
+        android:fillColor="#FFB3E0F2"
+        android:pathData="M16,0h78a16,16 0,0 1,16 16v78a16,16 0,0 1,-16 16h-78a16,16 0,0 1,-16 -16v-78a16,16 0,0 1,16 -16z" />
+    <path
+        android:fillColor="#FFFFD54F"
+        android:pathData="M78,32m-11,0a11,11 0,1 1,22 0a11,11 0,1 1,-22 0" />
+    <path
+        android:fillColor="#FF4DB6AC"
+        android:pathData="M0,84L34,48L60,76L74,62L110,94V94a16,16 0,0 1,-16 16h-78a16,16 0,0 1,-16 -16z" />
+    <path
+        android:fillColor="#FF00897B"
+        android:pathData="M0,98L28,74L52,92L110,104a16,16 0,0 1,-16 6h-78a16,16 0,0 1,-16 -12z" />
+</vector>

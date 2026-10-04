@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="widget_corner_radius">16dp</dimen>
+    <color name="widget_background">#FFE3ECEA</color>
+    <color name="widget_content">#FF3F4947</color>
+</resources>

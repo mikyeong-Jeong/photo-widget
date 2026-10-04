@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/photo/saved_photo.dart';
 import '../photos/confirm_delete_dialog.dart';
-import '../photos/photo_list_controller.dart';
 
 /// 홈 화면 위젯의 대표적인 모양. (가로 칸 x 세로 칸)
 enum WidgetShape {
@@ -36,8 +35,7 @@ class PhotoDetailScreen extends ConsumerWidget {
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
               final navigator = Navigator.of(context);
-              if (await confirmDeletePhoto(context)) {
-                await ref.read(photoListProvider.notifier).remove(photo.id);
+              if (await confirmAndDeletePhoto(context, ref, photo)) {
                 navigator.pop();
               }
             },

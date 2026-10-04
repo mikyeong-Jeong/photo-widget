@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_label">사진</string>
+    <string name="widget_description">고른 사진을 원하는 크기로 홈 화면에 걸어둬요</string>
+    <string name="widget_photo_description">위젯 사진</string>
+    <string name="widget_empty">눌러서 사진 선택</string>
+    <string name="widget_missing">사진이 지워졌어요\n눌러서 다시 선택</string>
+</resources>

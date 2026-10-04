@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  하나의 위젯을 1×1 부터 화면 가득까지 자유롭게 늘이고 줄여서 쓴다.
+  처음 놓을 때는 2×2, 놓는 순간 WidgetConfigureActivity 에서 사진을 고른다.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/photo_widget"
+    android:previewImage="@drawable/widget_preview"
+    android:previewLayout="@layout/photo_widget_preview"
+    android:description="@string/widget_description"
+    android:configure="com.mikyeong.photowidget.WidgetConfigureActivity"
+    android:widgetFeatures="reconfigurable"
+    android:widgetCategory="home_screen" />
