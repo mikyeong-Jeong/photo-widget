@@ -87,6 +87,9 @@ void main() {
       expect(find.text('저장한 사진이 없어요'), findsOneWidget);
 
       await tester.tap(find.text('사진 추가'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('갤러리 앱에서 고르기'));
+      await tester.pump();
       await tester.pump();
 
       expect(bridge.paths[_widgetId], fakePhoto('new').file.path);

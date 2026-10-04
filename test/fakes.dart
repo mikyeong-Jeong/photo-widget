@@ -35,12 +35,20 @@ class FakePhotoRepository implements PhotoRepository {
 }
 
 class FakeGalleryPicker implements GalleryPicker {
-  FakeGalleryPicker(this.result);
+  FakeGalleryPicker(this.result, {this.error});
 
   final List<String> result;
 
+  /// 고를 때 던질 예외.
+  final Object? error;
+  PhotoSource? lastSource;
+
   @override
-  Future<List<String>> pickImages() async => result;
+  Future<List<String>> pickImages(PhotoSource source) async {
+    lastSource = source;
+    if (error case final error?) throw error;
+    return result;
+  }
 }
 
 /// 홈 화면 위젯 대신 위젯별 설정을 메모리에 들고 있는다.
@@ -115,11 +123,14 @@ Widget testApp({
   required PhotoRepository repository,
   PhotoWidgetBridge? bridge,
   List<String> picked = const [],
+  FakeGalleryPicker? picker,
 }) {
   return ProviderScope(
     overrides: [
       photoRepositoryProvider.overrideWithValue(repository),
-      galleryPickerProvider.overrideWithValue(FakeGalleryPicker(picked)),
+      galleryPickerProvider.overrideWithValue(
+        picker ?? FakeGalleryPicker(picked),
+      ),
       photoWidgetBridgeProvider.overrideWithValue(
         bridge ?? FakePhotoWidgetBridge(),
       ),

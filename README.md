@@ -14,7 +14,7 @@
 lib/
   main.dart                 진입점: main(앱), widgetMain(위젯에서 여는 화면)
   app/                      MaterialApp, 테마
-  data/photo/               사진 저장소(앱 폴더 복사본 + photos.json 인덱스), 갤러리 선택
+  data/photo/               사진 저장소(앱 폴더 복사본 + photos.json 인덱스), 사진 고르기(갤러리 앱 / 최근 사진)
   data/widget/              홈 화면 위젯 연결 (위젯 ID → 사진 경로, 위젯 갱신)
   features/home/            저장한 사진 그리드 (추가 / 길게 눌러 삭제)
   features/photo_detail/    사진 크게 보기 + 위젯 크기별 미리보기
@@ -26,7 +26,16 @@ android/app/src/main/kotlin/com/mikyeong/photowidget/
   widget/PhotoWidgetProvider.kt  홈 화면 위젯 (크기 조절 가능, 위젯마다 다른 사진)
   widget/PhotoWidgetStore.kt     위젯별 설정: 사진 경로, 보기 방식, 직접 맞춘 영역 (home_widget 저장소)
   widget/PhotoBitmapLoader.kt    위젯 크기에 맞춰 줄이고 사진 방향 보정
+  gallery/GalleryAppPicker.kt    폰의 갤러리 앱으로 사진 고르기 (앨범별)
 ```
+
+## 사진 추가
+
+"사진 추가" 를 누르면 어디서 고를지 고른다. 어느 쪽이든 저장소 권한은 필요 없다.
+
+- **갤러리 앱에서 고르기:** 폰의 갤러리 앱(삼성 갤러리 등)이 열려 그 앱의 앨범별로 고른다. (`ACTION_PICK`, 없으면 파일 선택 화면)
+  고른 사진은 긴 변 1600px, 방향 보정된 JPEG 로 만들어 저장한다.
+- **최근 사진에서 고르기:** Android 시스템 사진 선택기. (`image_picker`)
 
 ## 위젯 동작
 

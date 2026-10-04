@@ -27,9 +27,9 @@ class PhotoListController extends AsyncNotifier<List<SavedPhoto>> {
   @override
   Future<List<SavedPhoto>> build() => _repository.loadAll();
 
-  /// 갤러리에서 사진을 골라 추가하고, 추가된 사진을 돌려준다. 실패하면 예외를 던진다.
-  Future<List<SavedPhoto>> pickAndAdd() async {
-    final paths = await ref.read(galleryPickerProvider).pickImages();
+  /// [source] 에서 사진을 골라 추가하고, 추가된 사진을 돌려준다. 실패하면 예외를 던진다.
+  Future<List<SavedPhoto>> pickAndAdd(PhotoSource source) async {
+    final paths = await ref.read(galleryPickerProvider).pickImages(source);
     if (paths.isEmpty) return const [];
     final updated = await _repository.add(paths);
     if (ref.mounted) state = AsyncData(updated);

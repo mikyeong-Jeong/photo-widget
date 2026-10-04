@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
+import com.mikyeong.photowidget.gallery.GalleryAppPicker
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -17,10 +18,19 @@ import io.flutter.plugin.common.MethodChannel
  * - 위젯을 놓을 때 / 다시 설정할 때 (APPWIDGET_CONFIGURE): 위젯에 걸 사진 고르기
  */
 class PhotoWidgetActivity : FlutterActivity() {
+    private val galleryAppPicker = GalleryAppPicker(this)
+
     override fun getDartEntrypointFunctionName(): String = "widgetMain"
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (!galleryAppPicker.onActivityResult(requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        galleryAppPicker.register(flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, LAUNCH_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {

@@ -45,6 +45,33 @@ object PhotoBitmapLoader {
         return rotated
     }
 
+    /**
+     * 긴 변이 [maxSide] px 이하가 되게 줄이고 사진 방향(EXIF)을 픽셀에 반영해 읽는다.
+     * 앱에 저장할 사진을 만들 때 쓴다. 읽을 수 없으면 null.
+     */
+    fun loadFitting(path: String, maxSide: Int): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+        val longest = maxOf(bounds.outWidth, bounds.outHeight)
+        var sample = 1
+        while (longest / (sample * 2) >= maxSide) sample *= 2
+        val decoded =
+            BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample })
+                ?: return null
+
+        val matrix = Matrix(readOrientation(path).matrix)
+        val scale = maxSide.toFloat() / maxOf(decoded.width, decoded.height)
+        if (scale < 1f) matrix.postScale(scale, scale)
+        if (matrix.isIdentity) return decoded
+
+        val result =
+            Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, matrix, true)
+        if (result !== decoded) decoded.recycle()
+        return result
+    }
+
     private class Orientation(val matrix: Matrix, val swapsAxes: Boolean)
 
     private fun readOrientation(path: String): Orientation {
