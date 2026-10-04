@@ -25,9 +25,9 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- 위젯에 걸 사진 고르기 (위젯을 놓을 때 / 위젯을 눌렀을 때) -->
+        <!-- 위젯 사진 보기(위젯을 눌렀을 때) / 사진 고르기(위젯을 놓을 때, 다시 설정할 때) -->
         <activity
-            android:name=".WidgetConfigureActivity"
+            android:name=".PhotoWidgetActivity"
             android:exported="true"
             android:excludeFromRecents="true"
             android:taskAffinity=""

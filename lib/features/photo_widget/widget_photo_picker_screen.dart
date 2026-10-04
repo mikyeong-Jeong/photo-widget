@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/photo/saved_photo.dart';
@@ -8,51 +7,37 @@ import '../photos/photo_grid.dart';
 import '../photos/photo_list_controller.dart';
 
 /// 위젯에 걸 사진을 고른다.
-///
-/// 위젯을 처음 놓을 때와 위젯을 눌렀을 때 열린다. 고르지 않고 닫으면
-/// 처음 놓는 위젯은 홈 화면에 추가되지 않고, 이미 있던 위젯은 그대로 둔다.
-class WidgetConfigureScreen extends ConsumerStatefulWidget {
-  const WidgetConfigureScreen({super.key});
+class WidgetPhotoPickerScreen extends ConsumerStatefulWidget {
+  const WidgetPhotoPickerScreen({
+    super.key,
+    required this.onPicked,
+    this.selectedPath,
+    this.onClose,
+  });
+
+  /// 사진을 골랐을 때. 실패하면 예외를 던진다.
+  final Future<void> Function(SavedPhoto photo) onPicked;
+
+  /// 지금 위젯에 걸린 사진 경로. 선택 표시를 한다.
+  final String? selectedPath;
+
+  /// 닫기 버튼을 눌렀을 때. 없으면 이전 화면으로 돌아간다.
+  final VoidCallback? onClose;
 
   @override
-  ConsumerState<WidgetConfigureScreen> createState() =>
-      _WidgetConfigureScreenState();
+  ConsumerState<WidgetPhotoPickerScreen> createState() =>
+      _WidgetPhotoPickerScreenState();
 }
 
-class _WidgetConfigureScreenState extends ConsumerState<WidgetConfigureScreen> {
-  int? _widgetId;
-  String? _currentPath;
+class _WidgetPhotoPickerScreenState
+    extends ConsumerState<WidgetPhotoPickerScreen> {
   bool _saving = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadWidget();
-  }
-
-  Future<void> _loadWidget() async {
-    final bridge = ref.read(photoWidgetBridgeProvider);
-    final widgetId = await bridge.configuringWidgetId();
-    if (widgetId == null) {
-      await SystemNavigator.pop();
-      return;
-    }
-    final currentPath = await bridge.photoPathOf(widgetId);
-    if (!mounted) return;
-    setState(() {
-      _widgetId = widgetId;
-      _currentPath = currentPath;
-    });
-  }
-
   Future<void> _select(SavedPhoto photo) async {
-    final widgetId = _widgetId;
-    if (widgetId == null || _saving) return;
+    if (_saving) return;
     setState(() => _saving = true);
-    final bridge = ref.read(photoWidgetBridgeProvider);
     try {
-      await bridge.assign(widgetId, photo);
-      await bridge.finishConfigure();
+      await widget.onPicked(photo);
     } catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -69,9 +54,11 @@ class _WidgetConfigureScreenState extends ConsumerState<WidgetConfigureScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('위젯에 걸 사진 고르기'),
-        leading: const CloseButton(onPressed: SystemNavigator.pop),
+        leading: widget.onClose == null
+            ? null
+            : CloseButton(onPressed: widget.onClose),
       ),
-      body: _widgetId == null || _saving
+      body: _saving
           ? const Center(child: CircularProgressIndicator())
           : switch (photos) {
               AsyncData(value: final photos) when photos.isEmpty =>
@@ -81,7 +68,7 @@ class _WidgetConfigureScreenState extends ConsumerState<WidgetConfigureScreen> {
                 ),
               AsyncData(value: final photos) => PhotoGrid(
                 photos: photos,
-                selectedPath: _currentPath,
+                selectedPath: widget.selectedPath,
                 onTap: _select,
               ),
               AsyncError() => PhotoErrorView(
@@ -89,7 +76,7 @@ class _WidgetConfigureScreenState extends ConsumerState<WidgetConfigureScreen> {
               ),
               _ => const Center(child: CircularProgressIndicator()),
             },
-      floatingActionButton: _widgetId == null || _saving
+      floatingActionButton: _saving
           ? null
           : AddPhotosButton(
               // 한 장만 새로 골랐다면 바로 위젯에 건다.

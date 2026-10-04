@@ -56,7 +56,7 @@ class PhotoDetailScreen extends ConsumerWidget {
           Text('위젯 크기별 미리보기', style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),
           Text(
-            '홈 화면에서는 위젯 크기에 맞게 가운데를 기준으로 잘려 보여요',
+            '위젯 보기 방식을 "꽉 채우기"로 하면 이렇게 가운데를 기준으로 잘려 보여요. "전체 보기"(기본)는 잘리지 않아요.',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

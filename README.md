@@ -12,19 +12,19 @@
 
 ```
 lib/
-  main.dart                 진입점: main(앱), widgetConfigureMain(위젯 사진 고르기)
+  main.dart                 진입점: main(앱), widgetMain(위젯에서 여는 화면)
   app/                      MaterialApp, 테마
   data/photo/               사진 저장소(앱 폴더 복사본 + photos.json 인덱스), 갤러리 선택
   data/widget/              홈 화면 위젯 연결 (위젯 ID → 사진 경로, 위젯 갱신)
   features/home/            저장한 사진 그리드 (추가 / 길게 눌러 삭제)
   features/photo_detail/    사진 크게 보기 + 위젯 크기별 미리보기
   features/photos/          사진 목록 상태(Riverpod), 공용 그리드·버튼·삭제 확인
-  features/widget_configure/ 위젯에 걸 사진 고르기 화면
+  features/photo_widget/    위젯에서 여는 화면: 원본 사진 보기, 위젯에 걸 사진 고르기
 
 android/app/src/main/kotlin/com/mikyeong/photowidget/
-  WidgetConfigureActivity.kt  위젯 놓을 때 / 위젯 누를 때 뜨는 Flutter 화면
+  PhotoWidgetActivity.kt      위젯 누를 때(사진 보기) / 놓을 때(사진 고르기) 뜨는 Flutter 화면
   widget/PhotoWidgetProvider.kt  홈 화면 위젯 (크기 조절 가능, 위젯마다 다른 사진)
-  widget/PhotoWidgetStore.kt     위젯 ID → 사진 경로 (home_widget 저장소)
+  widget/PhotoWidgetStore.kt     위젯별 설정: 사진 경로, 보기 방식 (home_widget 저장소)
   widget/PhotoBitmapLoader.kt    위젯 크기에 맞춰 줄이고 사진 방향 보정
 ```
 
@@ -32,8 +32,13 @@ android/app/src/main/kotlin/com/mikyeong/photowidget/
 
 1. 홈 화면에 "사진" 위젯을 놓으면 사진 고르기 화면이 뜬다. 고르지 않고 닫으면 위젯이 추가되지 않는다.
 2. 위젯은 1×1 부터 원하는 만큼 늘이고 줄일 수 있고, 크기가 바뀌면 그 크기에 맞는 해상도로 다시 그린다.
-3. 위젯을 누르면 다시 사진 고르기 화면이 떠서 다른 사진으로 바꿀 수 있다.
-4. 앱에서 위젯에 걸린 사진을 지우면 위젯은 "사진이 지워졌어요 / 눌러서 다시 선택" 으로 바뀐다.
+3. 보기 방식은 위젯마다 고른다.
+   - **전체 보기 (기본):** 사진 전체가 보이고, 남는 공간은 사진 색감의 흐린 배경으로 채운다.
+   - **꽉 채우기:** 위젯을 꽉 채우고, 비율이 다르면 가운데를 기준으로 잘린다.
+4. 위젯을 누르면 원본 사진 보기 화면이 열린다. (확대/이동 가능)
+   - 아래 버튼으로 보기 방식을 바꾸거나 **사진 바꾸기**로 다른 사진을 고른다.
+   - Android 12+ 는 위젯을 길게 눌러 나오는 설정(연필) 메뉴로도 사진을 바꿀 수 있다.
+5. 앱에서 위젯에 걸린 사진을 지우면 위젯은 "사진이 지워졌어요 / 눌러서 다시 선택" 으로 바뀐다.
 
 ## 여러 PC에서 빌드하기 (재설치 없이 덮어쓰기)
 

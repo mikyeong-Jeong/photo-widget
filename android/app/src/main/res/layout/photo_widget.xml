@@ -6,8 +6,27 @@
     android:background="@drawable/widget_background"
     android:clipToOutline="true">
 
+    <!-- 전체 보기: 남는 공간을 채우는 흐린 배경 -->
     <ImageView
-        android:id="@+id/widget_photo"
+        android:id="@+id/widget_photo_backdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <!-- 전체 보기: 사진 전체가 보이게 -->
+    <ImageView
+        android:id="@+id/widget_photo_fit"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/widget_photo_description"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
+
+    <!-- 꽉 채우기: 위젯 크기에 맞게 가운데 기준으로 잘라서 -->
+    <ImageView
+        android:id="@+id/widget_photo_fill"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@string/widget_photo_description"

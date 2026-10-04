@@ -43,21 +43,27 @@ class FakeGalleryPicker implements GalleryPicker {
   Future<List<String>> pickImages() async => result;
 }
 
-/// 홈 화면 위젯 대신 위젯 ID → 사진 경로를 메모리에 들고 있는다.
+/// 홈 화면 위젯 대신 위젯별 설정을 메모리에 들고 있는다.
 class FakePhotoWidgetBridge implements PhotoWidgetBridge {
-  FakePhotoWidgetBridge({this.widgetId, Map<int, String>? paths})
+  FakePhotoWidgetBridge({this.launchInfo, Map<int, String>? paths})
     : paths = paths ?? {};
 
-  final int? widgetId;
+  final WidgetLaunch? launchInfo;
   final Map<int, String> paths;
+  final Map<int, PhotoFit> fits = {};
   bool finished = false;
+  bool closed = false;
   int refreshCount = 0;
 
   @override
-  Future<int?> configuringWidgetId() async => widgetId;
+  Future<WidgetLaunch?> launch() async => launchInfo;
 
   @override
   Future<String?> photoPathOf(int widgetId) async => paths[widgetId];
+
+  @override
+  Future<PhotoFit> photoFitOf(int widgetId) async =>
+      fits[widgetId] ?? PhotoFit.fit;
 
   @override
   Future<void> assign(int widgetId, SavedPhoto photo) async {
@@ -66,7 +72,16 @@ class FakePhotoWidgetBridge implements PhotoWidgetBridge {
   }
 
   @override
+  Future<void> setPhotoFit(int widgetId, PhotoFit fit) async {
+    fits[widgetId] = fit;
+    refreshCount++;
+  }
+
+  @override
   Future<void> finishConfigure() async => finished = true;
+
+  @override
+  Future<void> close() async => closed = true;
 
   @override
   Future<int> countWidgetsShowing(SavedPhoto photo) async =>
